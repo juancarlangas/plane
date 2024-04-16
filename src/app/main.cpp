@@ -1,31 +1,29 @@
-/* Programa que lee un archivo .csv, lo almacena en un tabla (arreglo de struct)
- * y lo coteja con un arreglo factoria definido internamente.
- * Exporta los resultados en otra tabla .csv
- *
- * Se invoca de la siguiente forma: analizer <ruta/al/archivo.csv>
- * */
-
-#include <cstdint> // std:int32_t
-#include <cstdlib> // EXIT_SUCCESS, EXIT_FAILURE
-#include <vector> // std::vector
-#include <fstream> // std::cerr
+// ------------------------- HEADERS NECESARIOS ---------------------------------
+#include <cstdint>
+#include <cstdlib>
+#include <vector>
+#include <fstream>
 #include <iostream>
-#include <sstream> // std::stringstream
+#include <sstream>
 
 std::int32_t main(int argc, char* argv[]) {
-	if (argc != 2) { // Si el número de argumentos invocados es diferente a 2
-        std::cerr << "Uso: " << argv[0] << " <archivo_csv>\n"; // Mensaje de error
-        return EXIT_FAILURE; // Salimos del programa.
+	/* Revisamos que se hayan ingresado 2 argumentos (programa y archivo.csv)
+	 * En caso contrario, se manda mensaje de error y se termina el programa */
+	if (argc != 2) {
+        std::cerr << "Uso: " << argv[0] << " <archivo_csv>\n";
+        return EXIT_FAILURE;
     }
 
 	//------------------------- ARREGLO FACTORIAL --------------------------------
-	/* Definimos un struct que va a almacenar cada posible combinación */
+	/* Definimos un struct que almacena cada combinación,
+	 * Un valor bool (boleano) puede ser true (no cero) o false (cero) */
 	struct Combinacion {
-		std::string etiqueta;	// (1), a, ab, etc...
-		bool respuestas[3];		// 3 valores true o false
+		std::string etiqueta;
+		bool respuestas[3]; // True o false
 	};
 
-	/* ARREGLO FACTORIAL: Un arreglo de 8 elementos de combinaciones (tabla) */
+	/* Definimos el arreglo factorial y lo inicializamos. Podemos usar 1 y 0
+	 * o las palabras -true- y -false- */
 	Combinacion arreglo_factorial[8] {
 		{"(1)",	{0, 0, 0}},
 		{"a",	{1, 0, 0}},
@@ -38,137 +36,158 @@ std::int32_t main(int argc, char* argv[]) {
 	};
 
 	//---------------------------- BASE DE DATOS --------------------------------
-    std::ifstream archivo_csv(argv[1]); // Abrimos el .csv para leerlo
-    if (!archivo_csv.is_open()) { // Si no puede abrirse
-        std::cerr << "No se puede abrir el archivo .csv\n"; // Mensaje de error
-        return EXIT_FAILURE; // Salimos del programa
+	/* Intentamos abrir el archivo.csv. En caso de no poderse abrir,
+	 * mandamos mensaje de error y salimos del programa */
+    std::ifstream archivo_csv(argv[1]);
+    if (!archivo_csv.is_open()) {
+        std::cerr << "No se puede abrir el archivo .csv\n";
+        return EXIT_FAILURE;
     }
 
-	// Definimos un struct que va a almacenar cada cuestionario individual.
-	struct Cuestionario {
-		bool respuestas[3]; // (true si encuentra "Si", false si encuentra "No"
+	// Definimos un struct que almacena las respuestas de cada entrevistado
+	struct Entrevistado {
+		bool respuestas[3];
 		float valor;
 	};
 
-	// BASE DE DATOS: Una tabla (std::vector) con todos los cuestionarios.
-	// Los vectores son arreglos dinámicos, pueden crecer o decrecer
-	std::vector<Cuestionario> base_de_datos;
+	// Definimos un vector (tabla dinámica) con todos los entrevistados
+	std::vector<Entrevistado> base_de_datos;
 	
-	std::string linea_leida; // Línea CSV
-	Cuestionario cuestionario_leido; // Línea CSV convertida al struct Cuestionario
-	std::string respuesta_leida; // Respuesta individual
+	/* Definimos variables temporales con las que vamos a leer la información.*/
+	std::string linea_csv;
+	Entrevistado entrevistado;
+	std::string respuesta;
 
-	while (std::getline(archivo_csv, linea_leida)) { // Leemos la linea completa
-		std::stringstream stream(linea_leida); // La convertimos a stream
+	/* Leemos línea por línea hasta llegar al fin del documento .csv
+	 * Si tienen valores erróneos o vacíos saltamos a la siguiente línea.
+	 * De lo contrario, añadiremos el renglón a la base de datos */
+	while (std::getline(archivo_csv, linea_csv)) {
+		std::stringstream stream(linea_csv);
 
-		std::getline(stream, respuesta_leida, ','); // Extraemos respuesta 1
-		if (respuesta_leida.empty() || // Vacía o diferente a Sí / No? SIG LINEA
-				(respuesta_leida != "Si" && respuesta_leida != "No")) continue;
-		// Asignamos el resultado de comparar la respuesta con "Si" (true o false)
-		cuestionario_leido.respuestas[0] = (respuesta_leida == "Si");
+		// Pregunta 1
+		std::getline(stream, respuesta, ',');
+		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
+			continue;
+		entrevistado.respuestas[0] = (respuesta == "Si");
 
-		std::getline(stream, respuesta_leida, ','); // Extraemos respuesta 2
-		if (respuesta_leida.empty() || // Vacía o diferente a Sí / No? SIG LINEA
-				(respuesta_leida != "Si" && respuesta_leida != "No")) continue;
-		// Asignamos el resultado de comparar la respuesta con "Si" (true o false)
-		cuestionario_leido.respuestas[1] = (respuesta_leida == "Si");
+		// Pregunta 2
+		std::getline(stream, respuesta, ',');
+		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
+			continue;
+		entrevistado.respuestas[1] = (respuesta == "Si");
 
-		std::getline(stream, respuesta_leida, ','); // Extraemos respuesta 3
-		if (respuesta_leida.empty() || // Vacía o diferente a Sí / No? SIG LINEA
-				(respuesta_leida != "Si" && respuesta_leida != "No")) continue;
-		// Asignamos el resultado de comparar la respuesta con "Si" (true o false)
-		cuestionario_leido.respuestas[2] = respuesta_leida == "Si";
+		// Pregunta 3
+		std::getline(stream, respuesta, ',');
+		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
+			continue;
+		entrevistado.respuestas[2] = (respuesta == "Si");
 
-		std::getline(stream, respuesta_leida); // Extraemos valor
-		if (respuesta_leida.empty()) continue; // Valor vacío? SIG LINEA
-		// Asignamos diréctamente el valor leído
-		cuestionario_leido.valor = std::stof(respuesta_leida);
+		// Valor numérico
+		std::getline(stream, respuesta);
+		if (respuesta.empty()) continue; // Valor vacío? SIG LINEA
+		entrevistado.valor = std::stof(respuesta);
 
-		// Asignamos la línea completa acabamos de leer a la base de datos
-		base_de_datos.push_back(cuestionario_leido);
+		base_de_datos.push_back(entrevistado);
 	}
-	archivo_csv.close(); // Cerramos el archivo
+	archivo_csv.close();
 
 	//---------------------------- ANÁLISIS --------------------------------------
-	// Definimos un struct para las líneas que coincidan.
+	// Definimos un struct para cada renglón de la tabla final
 	struct Coincidencia {
-		std::string etiqueta; // Etiqueta del arreglo factorial
-		bool respuestas[3]; // Respuesta (true/false)
-		float valor; // Valor numérico
+		std::string etiqueta;
+		bool respuestas[3];
+		float valor;
 	};
 
-	// TABLA FINAL: Un vector del struct anterior para formar la table_final
+	// Definimos la tabla_final que es un vector de todas las coincidencias
 	std::vector<Coincidencia> tabla_final;
 
-	// LOOP
-	bool match; // Cada vuelta se reinicia a -false- esperando salir como -true-
+	bool se_encontro;
 	do {
-		match = false;
-		// Ciclamos por el arreglo factorial
+		se_encontro = false;
+
+		// Ciclamos por cada elemento del arreglo factorial
 		for (int i = 0; i < 8; ++i) {
-			match = false;
-			// Comienza a analizar desde arriba
-			auto renglon_analizado = base_de_datos.begin();
-			// Mientras no llegue al final
-			while (renglon_analizado != base_de_datos.end()) {
-				// Si hay match
+			se_encontro = false;
+
+			// Comenzamos desde arriba de la base de datos
+			auto entrevistado = base_de_datos.begin();
+			while (entrevistado != base_de_datos.end()) {
+
+				// Si las respuestas son las mismas
 				if (std::equal(std::begin(arreglo_factorial[i].respuestas),
 							std::end(arreglo_factorial[i].respuestas),
-							std::begin(renglon_analizado->respuestas))) {
-					// Definimos una variable para almacenar todo el renglón
-					Coincidencia coincidencia_encontrada;
-					// Le copiamos la etiqueta
-					coincidencia_encontrada.etiqueta =
-						arreglo_factorial[i].etiqueta;
-					// Le copiamos las respuestas
-					std::copy(std::begin(renglon_analizado->respuestas),
-							std::end(renglon_analizado->respuestas),
-							std::begin(coincidencia_encontrada.respuestas));
-					// Le copiamos el valor numérico
-					coincidencia_encontrada.valor = renglon_analizado->valor;
+							std::begin(entrevistado->respuestas))) {
 
-					// Agregamos la coincidencia a la tabla final
-					tabla_final.push_back(coincidencia_encontrada);
+					se_encontro = true;
+
+					// Copiamos todo el renglón a una variable temporal
+					Coincidencia coincidencia {
+						arreglo_factorial[i].etiqueta,
+						{
+							entrevistado->respuestas[0],
+							entrevistado->respuestas[1],
+							entrevistado->respuestas[2]
+						},
+						entrevistado->valor
+					};
+
+					// Lo agregamos a la tabla final
+					tabla_final.push_back(coincidencia);
 
 					// Eliminamos el renglón de la base de datos
-					renglon_analizado = base_de_datos.erase(renglon_analizado);
+					entrevistado = base_de_datos.erase(entrevistado);
 
-					// Marcamos que hemos encontrado una coincidencia
-					match = true;
-
-					// Salimos del bucle interno
 					break;
-				// Si no encontró coincidencia apuntaremos al siguiente renglón
-				} else {
-					++renglon_analizado;
+				}
+
+				// Si no coincidió, apuntaremos al sig rengón
+				else {
+					++entrevistado;
 				}
 			}
-			if (!match) { // Si terminó de analizar y no hubo match, salimos
+
+			// Si recorrió toda la tabla y aún no encontró nada, salimos
+			if (not(se_encontro)) {
 				break;
 			}
 		}
-	} while (match);
+
+	} while (se_encontro); // Mientras haya encontrado
+
 
 	//---------------------------- EXPORTACIÓN -----------------------------------
-	// Creamos un objeto de archivo de salida
-	std::ofstream archivo_salida("tabla_final.csv");
+	// Creamos los archivos de salida
+	std::ofstream archivo_analisis_completo("analisis-completo.csv");
+	std::ofstream archivo_analisis_resultados("analisis-resultados.csv");
 
-	if (!archivo_salida.is_open()) { // Abrimos el archivo. Si no se puede...
-		std::cerr << "Error al abrir tabla_final.csv\n"; // Mensaje de error
-		return EXIT_FAILURE; // Salimos del programa
+	// Intentamos abrirlos. De lo contrario, mandamos mensaje de error y salimos
+	if (!archivo_analisis_completo.is_open()) {
+		std::cerr << "Error al abrir tabla_final.csv\n";
+		return EXIT_FAILURE;
 	}
 
-	for (const auto& cuestionario : tabla_final) { // Cada linea del cuestionario
-		archivo_salida
-			<< cuestionario.etiqueta << ", "
-			<< (cuestionario.respuestas[0] ? "Sí" : "No") << ", "
-			<< (cuestionario.respuestas[1] ? "Sí" : "No") << ", "
-			<< (cuestionario.respuestas[2] ? "Sí" : "No") << ", "
-			<< cuestionario.valor << "\n";
+	if (!archivo_analisis_resultados.is_open()) {
+		std::cerr << "Error al abrir tabla_final.csv\n";
+		return EXIT_FAILURE;
 	}
 
-	// Cerramos el archivo
-	archivo_salida.close();
+	// Escribimos la información
+	for (const auto& coincidencia : tabla_final) { // Cada linea del cuestionario
+		archivo_analisis_completo
+			<< coincidencia.etiqueta << ", "
+			<< (coincidencia.respuestas[0] ? "Sí" : "No") << ", "
+			<< (coincidencia.respuestas[1] ? "Sí" : "No") << ", "
+			<< (coincidencia.respuestas[2] ? "Sí" : "No") << ", "
+			<< coincidencia.valor << "\n";
+
+		archivo_analisis_resultados
+			<< coincidencia.valor << '\n';
+	}
+
+	// Cerramos low archivo
+	archivo_analisis_completo.close();
+	archivo_analisis_resultados.close();
 
 	return EXIT_SUCCESS; // Salimos del programa con éxito GAD
 }

@@ -15,8 +15,8 @@ target_compile_features(Plane PUBLIC cxx_std_20)
 target_compile_options(Plane PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 set_target_properties(Plane PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
-	OUTPUT_NAME "analizer"
+	RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/releases"
+	OUTPUT_NAME "analizer-amd64"
 	)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
