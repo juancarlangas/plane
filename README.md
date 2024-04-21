@@ -11,7 +11,7 @@ Programa que analiza una base de datos y la coteja con un arreglo factorial para
 4. Abre el Explorador de Archivos y navega hasta la carpeta donde se encuentra tu base de datos y el archivo `analizer-amd64.exe`. Da click derecho y selecciona `Abrir con Powershell` o `Abrir con Terminal`.
 5. En la terminal, escribe el siguiente comando y presiona `Enter`:
 ```Powershell
-.\analizer-amd64.exe <nombre_de_tu_base_de_datos.csv>
+analizer-amd64.exe <nombre_de_tu_base_de_datos.csv>
 ```
 6. Espera a que el programa termine de analizar tu base de datos. Al finalizar, encontrarás dos archivos en la misma carpeta donde se encuentra tu base de datos:
     - `analisis-completo.txt`: Incluye la etiqueta del arreglo factorial y las columnas de respuestas.
