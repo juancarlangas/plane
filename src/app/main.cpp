@@ -111,13 +111,13 @@ std::int32_t main(int argc, char* argv[]) {
 			se_encontro = false;
 
 			// Comenzamos desde arriba de la base de datos
-			auto entrevistado = base_de_datos.begin();
-			while (entrevistado != base_de_datos.end()) {
+			auto muestra = base_de_datos.begin();
+			while (muestra != base_de_datos.end()) {
 
 				// Si las respuestas son las mismas
 				if (std::equal(std::begin(arreglo_factorial[i].respuestas),
 							std::end(arreglo_factorial[i].respuestas),
-							std::begin(entrevistado->respuestas))) {
+							std::begin(muestra->respuestas))) {
 
 					se_encontro = true;
 
@@ -125,25 +125,25 @@ std::int32_t main(int argc, char* argv[]) {
 					Coincidencia coincidencia {
 						arreglo_factorial[i].etiqueta,
 						{
-							entrevistado->respuestas[0],
-							entrevistado->respuestas[1],
-							entrevistado->respuestas[2]
+							muestra->respuestas[0],
+							muestra->respuestas[1],
+							muestra->respuestas[2]
 						},
-						entrevistado->valor
+						muestra->valor
 					};
 
 					// Lo agregamos a la tabla final
 					tabla_final.push_back(coincidencia);
 
 					// Eliminamos el renglón de la base de datos
-					entrevistado = base_de_datos.erase(entrevistado);
+					muestra = base_de_datos.erase(muestra);
 
 					break;
 				}
 
 				// Si no coincidió, apuntaremos al sig rengón
 				else {
-					++entrevistado;
+					++muestra;
 				}
 			}
 
