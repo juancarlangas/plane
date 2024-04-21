@@ -19,7 +19,7 @@ else()
 endif()
 
 set_target_properties(Plane PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/releases"
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin"
 	OUTPUT_NAME "analizer-amd64"
 	)
 
