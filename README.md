@@ -3,7 +3,7 @@ Programa que analiza una base de datos y la coteja con un arreglo factorial para
 
 ## Instalación
 1. Instala (si aún no lo tienes) la aplicación `Powershell` desde Windows Store.
-2. Descargar el archivo [analizer-amd64.exe](https://github.com/juancarlangas/plane/blob/main/releases/analizer-amd64.exe) y guárdalo en la misma carpeta donde se encuentra la base de datos a analizar.
+2. Descarga `analizer-amd64.exe` desde la carpeta [Releases](https://github.com/juancarlangas/plane/releases/) y guárdalo en la misma carpeta donde se encuentra la base de datos a analizar.
 3. Abre y prepara tu base de datos en Excel o LibreOffice Calc.
     a. Elimina la primer fila (títulos de columnas) si es que contiene.
     b. Asegúrate que todas las palabras `Si` estén **sin acento**. Puedes usar la herramienta **Sustituir o reemplazar** para cambiar todas las instancias de `Sí` por `Si`.
