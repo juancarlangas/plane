@@ -7,23 +7,26 @@
 #include <sstream>
 
 std::int32_t main(int argc, char* argv[]) {
-	/* Revisamos que se hayan ingresado 2 argumentos (programa y archivo.csv)
-	 * En caso contrario, se manda mensaje de error y se termina el programa */
+
+	/* Revisamos que se hayan ingresado solo 2 argumentos:
+	 * 		<nombre_del_programa> <archivo_csv>
+	 * En caso de no ser así, mandamos mensaje de error y salimos del programa */
+
 	if (argc != 2) {
         std::cerr << "Uso: " << argv[0] << " <archivo_csv>\n";
         return EXIT_FAILURE;
     }
 
 	//------------------------- ARREGLO FACTORIAL --------------------------------
-	/* Definimos un struct que almacena cada combinación,
-	 * Un valor bool (boleano) puede ser true (no cero) o false (cero) */
+	/* Vamos a crear la tabla del ARREGLO FACTORIAL. Primero definimos un tipo
+	 * de struct que almacena la etiqueta y las respuestas de cada combinación.
+	 * Luego lo usamos para construir nuestra tabla */
+
 	struct Combinacion {
-		std::string etiqueta;
+		std::string etiqueta; // (1), a, b, ab, c, ac, bc, abc, etc
 		bool respuestas[3]; // True o false
 	};
 
-	/* Definimos el arreglo factorial y lo inicializamos. Podemos usar 1 y 0
-	 * o las palabras -true- y -false- */
 	Combinacion arreglo_factorial[8] {
 		{"(1)",	{0, 0, 0}},
 		{"a",	{1, 0, 0}},
@@ -36,71 +39,89 @@ std::int32_t main(int argc, char* argv[]) {
 	};
 
 	//---------------------------- BASE DE DATOS --------------------------------
-	/* Intentamos abrir el archivo.csv. En caso de no poderse abrir,
-	 * mandamos mensaje de error y salimos del programa */
+	/* Creamos un objeto de tipo ifstream para leer el archivo .csv */
     std::ifstream archivo_csv(argv[1]);
+
+	/* Si no se pudo abrir el archivo, mandamos mensaje de error y salimos del programa */
     if (!archivo_csv.is_open()) {
         std::cerr << "No se puede abrir el archivo .csv\n";
         return EXIT_FAILURE;
     }
 
-	// Definimos un struct que almacena las respuestas de cada entrevistado
+	/* Vamos a crear la tabla para nuestra base de datos. Definimos un struct que
+	 * almacena las respuestas y el valor numérico de cada entrevistado. Luego lo
+	 * usamos para construir nuestra tabla. */
+
 	struct Entrevistado {
 		bool respuestas[3];
 		float valor;
 	};
 
-	// Definimos un vector (tabla dinámica) con todos los entrevistados
 	std::vector<Entrevistado> base_de_datos;
 	
-	/* Definimos variables temporales con las que vamos a leer la información.*/
+	/* Definimos variables temporales con las que vamos a leer la información.
+	 * Al final de cada vuelta, si fue un renglón válido, usamos estas variables
+	 * para agregar la línea completa a la base de datos. */
+
 	std::string linea_csv;
 	Entrevistado entrevistado;
 	std::string respuesta;
 
-	/* Leemos línea por línea hasta llegar al fin del documento .csv
-	 * Si tienen valores erróneos o vacíos saltamos a la siguiente línea.
-	 * De lo contrario, añadiremos el renglón a la base de datos */
+	/* Leemos línea por línea hasta llegar al fin del documento .csv */
 	while (std::getline(archivo_csv, linea_csv)) {
 		std::stringstream stream(linea_csv);
 
-		// Pregunta 1
+		/* Pregunta 1: Leemos hasta la primer coma. En caso de que la respuesta
+		 * sea vacía o no sea "Si" o "No", saltamos el resto del ciclo y continuamos */
 		std::getline(stream, respuesta, ',');
 		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
 			continue;
 		entrevistado.respuestas[0] = (respuesta == "Si");
 
-		// Pregunta 2
+		/* Pregunta 2: Leemos hasta la segunda coma. En caso de que la respuesta
+		 * sea vacía o no sea "Si" o "No", saltamos el resto del ciclo y continuamos */
 		std::getline(stream, respuesta, ',');
 		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
 			continue;
 		entrevistado.respuestas[1] = (respuesta == "Si");
 
-		// Pregunta 3
+		/* Pregunta 3: Leemos hasta la tercer coma. En caso de que la respuesta
+		 * sea vacía o no sea "Si" o "No", saltamos el resto del ciclo y continuamos */
 		std::getline(stream, respuesta, ',');
 		if (respuesta.empty() || (respuesta != "Si" && respuesta != "No"))
 			continue;
 		entrevistado.respuestas[2] = (respuesta == "Si");
 
-		// Valor numérico
+		// Valor numérico : Leemos hasta el final de la línea csv. En caso de que
+		// la respuesta sea vacía, saltamos el resto del ciclo y continuamos
 		std::getline(stream, respuesta);
 		if (respuesta.empty()) continue; // Valor vacío? SIG LINEA
 		entrevistado.valor = std::stof(respuesta);
 
+		/* Si llegamos hasta aquí, es porque todas las respuestas son válidas.
+		 * Por lo tanto, agregamos el entrevistado a la base de datos */
 		base_de_datos.push_back(entrevistado);
 	}
-	archivo_csv.close();
+	archivo_csv.close(); // Cerramos el archivo de lectura una vez terminado
+
 
 	//---------------------------- ANÁLISIS --------------------------------------
-	// Definimos un struct para cada renglón de la tabla final
-	struct Coincidencia {
-		std::string etiqueta;
-		bool respuestas[3];
-		float valor;
+	/* Ahora que ya tenemos llena nuestra base de datos, vamos a hacer las comparaciones
+	 * utilizando una tabla nueva que será una mezcla del arreglo factorial y la base de datos.
+	 * Ahí vamos a meter las coincidencias que encontremos. */
+
+	// Definimos un struct para cada renglón de dicha tabla
+	struct RenglonAnalisis {
+		std::string etiqueta; // (1), a, b, ab, c, ac, bc, abc, etc
+		bool respuestas[3]; // True o false
+		float valor; // Valor numérico
 	};
 
-	// Definimos la tabla_final que es un vector de todas las coincidencias
-	std::vector<Coincidencia> tabla_final;
+	std::vector<RenglonAnalisis> analisis;
+
+	// Creamos una variable tipo <true/false> que comienza cada búsqueda en false
+	// y espera convertirse en true al final de cada ciclo. Si no lo logra, salimos
+	// del ciclo y terminamos el programa.
 
 	bool se_encontro;
 	do {
@@ -111,53 +132,54 @@ std::int32_t main(int argc, char* argv[]) {
 			se_encontro = false;
 
 			// Comenzamos desde arriba de la base de datos
-			auto muestra = base_de_datos.begin();
-			while (muestra != base_de_datos.end()) {
+			auto renglon = base_de_datos.begin();
+			while (renglon != base_de_datos.end()) {
 
-				// Si las respuestas son las mismas
+				// Si encontró coincidencia
 				if (std::equal(std::begin(arreglo_factorial[i].respuestas),
 							std::end(arreglo_factorial[i].respuestas),
-							std::begin(muestra->respuestas))) {
+							std::begin(renglon->respuestas))) {
 
-					se_encontro = true;
+					se_encontro = true; // Ya chingamos
 
-					// Copiamos todo el renglón a una variable temporal
-					Coincidencia coincidencia {
+					// Creamos un renglon final temporal y lo llenamos
+					// con la informacion del arreglo factorial y la base de datos
+					RenglonAnalisis renglon_analisis = {
 						arreglo_factorial[i].etiqueta,
 						{
-							muestra->respuestas[0],
-							muestra->respuestas[1],
-							muestra->respuestas[2]
+							renglon->respuestas[0],
+							renglon->respuestas[1],
+							renglon->respuestas[2]
 						},
-						muestra->valor
+						renglon->valor
 					};
 
-					// Lo agregamos a la tabla final
-					tabla_final.push_back(coincidencia);
+					// Y lo anañadimos a la tabla del análisis final
+					analisis.push_back(renglon_analisis);
 
-					// Eliminamos el renglón de la base de datos
-					muestra = base_de_datos.erase(muestra);
+					// Eliminamos el renglón de la base de datos original
+					renglon = base_de_datos.erase(renglon);
 
 					break;
 				}
 
-				// Si no coincidió, apuntaremos al sig rengón
+				// Si no coincidió, apuntaremos al sig rengón de la base de datos
 				else {
-					++muestra;
+					++renglon;
 				}
 			}
 
-			// Si recorrió toda la tabla y aún no encontró nada, salimos
+			// Si recorrió toda la base de datos y aún no encontró nada, salimos
 			if (not(se_encontro)) {
 				break;
 			}
 		}
 
-	} while (se_encontro); // Mientras haya encontrado
+	} while (se_encontro); // Mientras haya encontrado coincidencia, continua
 
 
 	//---------------------------- EXPORTACIÓN -----------------------------------
-	// Creamos los archivos de salida
+	// Creamos dos archivos de salida
 	std::ofstream archivo_analisis_completo("analisis-completo.csv");
 	std::ofstream archivo_analisis_resultados("analisis-resultados.csv");
 
@@ -172,20 +194,23 @@ std::int32_t main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	// Escribimos la información
-	for (const auto& coincidencia : tabla_final) { // Cada linea del cuestionario
+	// Escribimos la información:
+	// - Para analisis-completo.csv: etiqueta, respuestas, valor
+	// - Para analisis-resultados.csv: valor
+
+	for (const auto& renglon_analisis : analisis) { // Cada linea del cuestionario
 		archivo_analisis_completo
-			<< coincidencia.etiqueta << ", "
-			<< (coincidencia.respuestas[0] ? "Sí" : "No") << ", "
-			<< (coincidencia.respuestas[1] ? "Sí" : "No") << ", "
-			<< (coincidencia.respuestas[2] ? "Sí" : "No") << ", "
-			<< coincidencia.valor << "\n";
+			<< renglon_analisis.etiqueta << ", "
+			<< (renglon_analisis.respuestas[0] ? "Sí" : "No") << ", "
+			<< (renglon_analisis.respuestas[1] ? "Sí" : "No") << ", "
+			<< (renglon_analisis.respuestas[2] ? "Sí" : "No") << ", "
+			<< renglon_analisis.valor << "\n";
 
 		archivo_analisis_resultados
-			<< coincidencia.valor << '\n';
+			<< renglon_analisis.valor << '\n';
 	}
 
-	// Cerramos low archivo
+	// Cerramos ambos archivos
 	archivo_analisis_completo.close();
 	archivo_analisis_resultados.close();
 
